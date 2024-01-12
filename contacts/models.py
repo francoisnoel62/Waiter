@@ -1,9 +1,14 @@
-class Contact:
-    def __init__(self, id, name, email, phone):
-        self.id = id
-        self.name = name
-        self.email = email
-        self.phone = phone
+from sqlalchemy import Column, Integer, String
+
+from config.database import Base
+
+
+class Contact(Base):
+    __tablename__ = 'contacts'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    email = Column(String)
+    phone = Column(String)
 
     # A method to serialize the object to a dictionary
     def to_dict(self):

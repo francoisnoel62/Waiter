@@ -1,14 +1,13 @@
-import sqlite3
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
+# Database engine
+engine = create_engine('sqlite:///db.sqlite', echo=True)  # echo=True will log SQL commands
 
-def get_db_connection():
-    conn = sqlite3.connect('db.sqlite')
-    conn.row_factory = sqlite3.Row
-    return conn
+# Session creation
+Session = sessionmaker(bind=engine)
+session = Session()
 
-
-def get_contacts():
-    conn = get_db_connection()
-    contacts = conn.execute('SELECT * FROM contacts').fetchall()
-    conn.close()
-    return contacts
+# Base class for declarative models
+Base = declarative_base()

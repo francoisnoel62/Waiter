@@ -2,7 +2,7 @@ from config.app import app
 import contacts.urls
 
 
-@app.route("/")
+@app.get("/")
 def hello():
     return "Hello, World from Waiter!"
 
