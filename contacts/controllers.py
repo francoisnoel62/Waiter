@@ -20,3 +20,19 @@ def create_contact(contact):
     session.add(new_contact)
     session.commit()
     return to_json(new_contact)
+
+
+def delete_this_contact(id):
+    contact = session.query(Contact).filter_by(id=id).first()
+    session.delete(contact)
+    session.commit()
+    return get_all_contacts()
+
+
+def update_this_contact(id, contact):
+    this_contact = session.query(Contact).filter_by(id=id).first()
+    for key in ['name', 'email', 'phone']:
+        if key in contact:
+            setattr(this_contact, key, contact[key])
+    session.commit()
+    return to_json(this_contact)
