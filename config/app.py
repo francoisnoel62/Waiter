@@ -1,7 +1,10 @@
+from http import HTTPStatus
 import json
 import logging
 from wsgiref.simple_server import make_server
 import re
+
+from config.customs_exceptions import ObjectDoesNotExistsException
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
@@ -56,6 +59,7 @@ class Waiter:
                 if match:
                     # Extract path parameters from the match object
                     params = match.groupdict()
+                    print(params)
 
                     if method == 'POST' or method == 'PUT':
                         # Handle POST request with JSON data
@@ -69,11 +73,20 @@ class Waiter:
                                 return [b'Invalid JSON data']
                             params['contact'] = post_data
 
-                    response_body = handler(**params)
-                    status = '200 OK'
-                    headers = [('Content-type', 'application/json')]
-                    start_response(status, headers)
-                    return [response_body.encode()]
+                    if method == 'GET':
+                        try:
+                            response_body = handler(**params)
+                            status = str(HTTPStatus.OK.value) + ' ' + HTTPStatus.OK.phrase
+                            headers = [('Content-type', 'application/json')]
+                            start_response(status, headers)
+                            return [response_body.encode('utf-8')] if isinstance(response_body, str) else [
+                                json.dumps(response_body).encode('utf-8')]
+                        except ObjectDoesNotExistsException as e:
+                            print(e)
+                            error_response = {'error': str(e)}
+                            start_response(str(HTTPStatus.NO_CONTENT.value) + ' ' + HTTPStatus.NO_CONTENT.phrase,
+                                           [('Content-Type', 'application/json')])
+                            return [json.dumps(error_response, indent=4).encode('utf-8')]
 
         # No matching route found
         start_response('404 NOT FOUND', [('Content-Type', 'text/plain')])

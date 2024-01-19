@@ -1,5 +1,6 @@
 import logging
 
+from config.customs_exceptions import ObjectDoesNotExistsException
 from config.database import session
 from contacts.models import Contact
 from utils.json import to_json
@@ -12,6 +13,9 @@ def get_all_contacts():
 
 def get_this_contact(id):
     contact = session.query(Contact).filter_by(id=id).first()
+    if not contact:
+        raise ObjectDoesNotExistsException()
+
     return to_json(contact)
 
 
@@ -23,10 +27,15 @@ def create_contact(contact):
 
 
 def delete_this_contact(id):
-    contact = session.query(Contact).filter_by(id=id).first()
-    session.delete(contact)
-    session.commit()
-    return get_all_contacts()
+    try:
+        contact = session.query(Contact).filter_by(id=id).first()
+        session.delete(contact)
+        session.commit()
+        return get_all_contacts()
+    except Exception as e:
+        logging.error(e)
+        return "Contact not found"
+
 
 
 def update_this_contact(id, contact):
